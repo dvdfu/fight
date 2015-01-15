@@ -122,13 +122,17 @@ public abstract class Player extends BoardUnit {
 		if (!moving) {
 			if (moveQueue.size() < 2) {
 				if (gp.keyDown(GamepadComponent.Button.RIGHT)) {
+					moveDirection = Direction.RIGHT;
 					moveQueue.add(Direction.RIGHT);
 				} else if (gp.keyDown(GamepadComponent.Button.LEFT)) {
+					moveDirection = Direction.LEFT;
 					moveQueue.add(Direction.LEFT);
 				}
 				if (gp.keyDown(GamepadComponent.Button.UP)) {
+					moveDirection = Direction.UP;
 					moveQueue.add(Direction.UP);
 				} else if (gp.keyDown(GamepadComponent.Button.DOWN)) {
+					moveDirection = Direction.DOWN;
 					moveQueue.add(Direction.DOWN);
 				}
 			}

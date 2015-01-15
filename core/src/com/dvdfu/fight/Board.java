@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Pool;
 import com.dvdfu.fight.components.SpriteComponent;
 
@@ -20,6 +21,7 @@ public class Board {
 	LinkedList<BoardUnit> units;
 	
 	Pool<Fireball> poolFireball;
+	Pool<FireBullet> poolFirebullet;
 
 	public Board(int width, int height) {
 		this.width = width;
@@ -35,7 +37,7 @@ public class Board {
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
 				Cell cell = new Cell(self, i, j);
-				cell.height = Math.min(Math.min(i, width - 1 - i), Math.min(j, height - 1 - j)) * 6;
+				cell.height = Math.min(Math.min(i, width - 1 - i), Math.min(j, height - 1 - j)) * 12;
 				grid[i][j] = cell;
 				units.add(cell);
 			}
@@ -46,6 +48,12 @@ public class Board {
 		poolFireball = new Pool<Fireball>() {
 			protected Fireball newObject() {
 				return new Fireball(self);
+			}
+		};
+		
+		poolFirebullet = new Pool<FireBullet>() {
+			protected FireBullet newObject() {
+				return new FireBullet(self);
 			}
 		};
 	}
@@ -109,6 +117,14 @@ public class Board {
 					i--;
 				}
 			}
+			if (b instanceof FireBullet) {
+				FireBullet f = (FireBullet) b;
+				if (f.dead) {
+					poolFirebullet.free(f);
+					units.remove(i);
+					i--;
+				}
+			}
 		}
 		
 		Collections.sort(units, new Comparator<BoardUnit>() {
@@ -121,10 +137,8 @@ public class Board {
 	}
 	
 	public Cell getCell(int x, int y) {
-		if (x < 0) x = 0;
-		if (x >= width) x = width - 1;
-		if (y < 0) y = 0;
-		if (y >= height) y = height - 1;
+		x = MathUtils.clamp(x, 0, width - 1);
+		y = MathUtils.clamp(y, 0, height - 1);
 		return grid[x][y];
 	}
 

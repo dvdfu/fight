@@ -28,7 +28,7 @@ public class PlayerFire extends Player {
 		manaTicks = manaMax;
 		
 		a1 = new Attack(); // flamewheel
-		a1.mana = 4;
+		a1.mana = 1;
 		a1.damage = 1;
 		a1.cooldown = 0;
 		a1.windup = 0;
@@ -38,6 +38,12 @@ public class PlayerFire extends Player {
 		a2.damage = 1;
 		a2.cooldown = 0;
 		a2.windup = 0;
+		
+		a3 = new Attack(); // firebullet
+		a3.mana = 1;
+		a3.damage = 1;
+		a3.cooldown = 0;
+		a3.windup = 0;
 	}
 	
 	protected void startMoving() {
@@ -73,44 +79,61 @@ public class PlayerFire extends Player {
 			a2.using ^= true;
 		}
 		
-		if (gp.keyDown(GamepadComponent.Button.B)) {
+		if (gp.keyPressed(GamepadComponent.Button.B)) {
 			if (!a1.using && manaTicks >= a1.mana) {
 				manaTicks -= a1.mana;
 				a1.using = true;
 				attackTimer = 1;
 			}
-			if (a1.using) {
+		}
+		
+		if (gp.keyPressed(GamepadComponent.Button.X)) {
+			if (!a3.using && manaTicks >= a3.mana) {
+				manaTicks -= a3.mana;
+				FireBullet fb = board.poolFirebullet.obtain();
+				fb.set(moveDirection, xCell, yCell, height + 8);
+				board.units.add(fb);
+			}
+		}
+		
+		if (a1.using) {
+			if (gp.keyDown(GamepadComponent.Button.B)) {
+				attackRange = (int) attackTimer;
 				if (attackTimer < 3) {
 					attackTimer += 0.05f;
 				} else {
 					attackTimer = 3;
+					useAttack1();
 				}
+			} else {
+				useAttack1();
 			}
-		} else {
-			if (attackRange > 0) {
-				LinkedList<Cell> cellList = new LinkedList<Cell>();
-				for (int i = 0; i < board.width; i++) {
-					for (int j = 0; j < board.height; j++) {
-						if (Math.abs(xCell - i) + Math.abs(yCell - j) == attackRange) {
-							cellList.add(board.getCell(i, j));
-						}
+		}
+		
+		super.update();
+	}
+	
+	private void useAttack1() {
+		if (attackRange > 0) {
+			LinkedList<Cell> cellList = new LinkedList<Cell>();
+			for (int i = 0; i < board.width; i++) {
+				for (int j = 0; j < board.height; j++) {
+					if (Math.abs(xCell - i) + Math.abs(yCell - j) == attackRange) {
+						cellList.add(board.getCell(i, j));
 					}
 				}
-				
-				while (!cellList.isEmpty()) {
-					Cell cell = cellList.remove();
-					Fireball f = board.poolFireball.obtain();
-					f.set(cell, xCell, yCell, height);
-					fireballs.add(f);
-					board.units.add(f);
-				}
+			}
+			
+			while (!cellList.isEmpty()) {
+				Cell cell = cellList.remove();
+				Fireball f = board.poolFireball.obtain();
+				f.set(cell, xCell, yCell, height);
+				fireballs.add(f);
+				board.units.add(f);
 			}
 			a1.using = false;
 			attackTimer = 0;
 		}
-		
-		attackRange = (int) attackTimer;
-		super.update();
 	}
 	
 	public void draw(SpriteBatch batch) {
