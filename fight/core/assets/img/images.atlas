@@ -1,0 +1,41 @@
+
+images.png
+size: 128,32
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+edge
+  rotate: false
+  xy: 70, 10
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+firetile
+  rotate: false
+  xy: 2, 2
+  size: 48, 24
+  orig: 48, 24
+  offset: 0, 0
+  index: -1
+player
+  rotate: false
+  xy: 52, 2
+  size: 16, 24
+  orig: 16, 24
+  offset: 0, 0
+  index: -1
+pointer
+  rotate: false
+  xy: 88, 10
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+tile
+  rotate: false
+  xy: 106, 10
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
