@@ -1,5 +1,7 @@
 package com.dvdfu.fight;
 
+import java.util.LinkedList;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -23,20 +25,23 @@ public class Player {
 	boolean key1, key2;
 	boolean grounded;
 
+	enum Direction {
+		UP, DOWN, LEFT, RIGHT
+	};
+
+	LinkedList<Direction> moveQueue;
+
 	public Player(Board board) {
 		this.board = board;
+		moveQueue = new LinkedList<Direction>();
 		pspr = new SpriteComponent(Const.atlas.findRegion("player"));
 		x = (xCell + 0.5f) * cellWidth;
 		y = (yCell + 0.5f) * cellHeight;
 	}
 
-	public void update() {
-		grounded = height == board.getHeight(xCell, yCell);
+	private void handleJump() {
 		boardHeight = Math.max(board.getHeight(xCell, yCell),
 				board.getHeight(xCellNext, yCellNext));
-		key1 = Gdx.input.isKeyPressed(Input.Keys.F);
-		
-
 		if (height + vSpeed < boardHeight) {
 			vSpeed = 0;
 			height = boardHeight;
@@ -53,41 +58,94 @@ public class Player {
 				height = boardHeight;
 			}
 		}
+		grounded = height == board.getHeight(xCell, yCell);
+	}
+
+	private void testMove(Direction direction, int distance) {
+		switch (direction) {
+		case UP:
+			if (yCell < board.height - distance && height >= board.getHeight(xCell, yCell + distance)) {
+				moving = true;
+				moveTimer = 0;
+				yMove = distance;
+				System.out.println("UP");
+			}
+			break;
+		case DOWN:
+			if (yCell >= distance && height >= board.getHeight(xCell, yCell - distance)) {
+				moving = true;
+				moveTimer = 0;
+				yMove = -distance;
+				System.out.println("DOWN");
+			}
+			break;
+		case LEFT:
+			if (xCell >= distance && height >= board.getHeight(xCell - distance, yCell)) {
+				moving = true;
+				moveTimer = 0;
+				xMove = -distance;
+				System.out.println("LEFT");
+			}
+			break;
+		case RIGHT:
+			if (xCell < board.width - distance && height >= board.getHeight(xCell + distance, yCell)) {
+				moving = true;
+				moveTimer = 0;
+				xMove = distance;
+				System.out.println("RIGHT");
+			}
+			break;
+		}
+	}
+
+	public void update() {
+		key1 = Gdx.input.isKeyPressed(Input.Keys.F);
+		handleJump();
+		
+		if (moveQueue.size() < 2) {
+			if (!moving && Gdx.input.isKeyPressed(Input.Keys.W)) {
+				if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
+					moveQueue.clear();
+				}
+				moveQueue.add(Direction.UP);
+			}
+			if (!moving && Gdx.input.isKeyPressed(Input.Keys.S)) {
+				if (Gdx.input.isKeyJustPressed(Input.Keys.S)) {
+					moveQueue.clear();
+				}
+				moveQueue.add(Direction.DOWN);
+			}
+			if (!moving && Gdx.input.isKeyPressed(Input.Keys.A)) {
+				if (Gdx.input.isKeyJustPressed(Input.Keys.A)) {
+					moveQueue.clear();
+				}
+				moveQueue.add(Direction.LEFT);
+			}
+			if (!moving && Gdx.input.isKeyPressed(Input.Keys.D)) {
+				if (Gdx.input.isKeyJustPressed(Input.Keys.D)) {
+					moveQueue.clear();
+				}
+				moveQueue.add(Direction.RIGHT);
+			}
+		}
+		
 		if (!moving) {
-			if (Gdx.input.isKeyPressed(Input.Keys.A) && xCell > 0
-					&& height >= board.getHeight(xCell - 1, yCell)) {
-				moving = true;
-				xMove = -1;
-				moveTimer = 0;
-			}
-			else if (Gdx.input.isKeyPressed(Input.Keys.D) && xCell < board.width - 1
-					&& height >= board.getHeight(xCell + 1, yCell)) {
-				moving = true;
-				xMove = 1;
-				moveTimer = 0;
-			}
-			else if (Gdx.input.isKeyPressed(Input.Keys.S) && yCell > 0
-					&& height >= board.getHeight(xCell, yCell - 1)) {
-				moving = true;
-				yMove = -1;
-				moveTimer = 0;
-			}
-			else if (Gdx.input.isKeyPressed(Input.Keys.W)
-					&& yCell < board.height - 1
-					&& height >= board.getHeight(xCell, yCell + 1)) {
-				moving = true;
-				yMove = 1;
-				moveTimer = 0;
+			if (!moveQueue.isEmpty()) {
+				testMove(moveQueue.remove(), 1);
 			}
 		}
 		
 		if (moveTimer == 0) {
-			if (board.getStatus(xCell, yCell) == Cell.Status.ON_FIRE && grounded) {
+			if (board.getStatus(xCell, yCell) == Cell.Status.ON_FIRE
+					&& grounded) {
 				moveTimerLength = 6;
 			} else if (grounded) {
 				moveTimerLength = 12;
 			}
 		}
+
+		xCellNext = xCell + xMove;
+		yCellNext = yCell + yMove;
 
 		if (moving) {
 			x = (MathUtils.lerp(xCell, xCellNext, moveTimer / moveTimerLength) + 0.5f)
@@ -109,9 +167,6 @@ public class Player {
 				}
 			}
 		}
-
-		xCellNext = xCell + xMove;
-		yCellNext = yCell + yMove;
 	}
 
 	public void draw(SpriteBatch batch) {

@@ -26,7 +26,7 @@ public class Board {
 //				grid[i][j].height = 20 * (5 - Math.max(Math.abs(i - 4), Math.abs(j - 4)));
 //				grid[i][j].height = 20 * MathUtils.random((j + i) / 3);
 //				grid[i][j].height = 6 * ((j ^ i));
-				grid[i][j].height = 0;
+//				grid[i][j].height = 0;
 			}
 		}
 	}
