@@ -25,7 +25,7 @@ public abstract class Player extends BoardUnit {
 	int manaTicks;
 	int manaMax;
 	
-	Attack[] attack = new Attack[4];
+	Attack[] attacks = new Attack[4];
 	
 	GamepadComponent gp;
 	enum Direction { UP, DOWN, LEFT, RIGHT };
@@ -50,7 +50,7 @@ public abstract class Player extends BoardUnit {
 		if (height + ySpeed < groundHeight) {
 			ySpeed = 0;
 			height = groundHeight;
-		} else if (height == groundHeight) {
+		} else if (height <= groundHeight && canMove) {
 			if (gp.keyDown(GamepadComponent.Button.R)) {
 				ySpeed = 5;
 				height += ySpeed;
@@ -99,7 +99,7 @@ public abstract class Player extends BoardUnit {
 	
 	protected void endMoving() {}
 
-	private void cancelMoving() {
+	protected void cancelMoving() {
 		moving = false;
 		moveTime = 0;
 		xMove = 0;
@@ -107,9 +107,32 @@ public abstract class Player extends BoardUnit {
 		x = (xCell + 0.5f) * board.cellWidth;
 		y = (yCell + 0.5f) * board.cellHeight;
 	}
+	
+	protected boolean useMana(Attack attack) {
+		if (manaTicks >= attack.manaCost) {
+			manaTicks -= attack.manaCost;
+			return true;
+		}
+		return false;
+	}
 
 	public void update() {
 		handleJump();
+		
+		for (int i = 0; i < attacks.length; i++) {
+			Attack attack = attacks[i];
+			if (attack == null) continue;
+			if (attack.pressToUse) {
+				if (gp.keyPressed(attack.button)) {
+					attack.pressed();
+				}
+			} else if (gp.keyDown(attack.button)) {
+				attack.pressed();
+			}
+			if (attack.using) {
+				attack.using();
+			}
+		}
 		
 		if (manaTicks < manaMax) {
 			if (manaFill >= 1) {

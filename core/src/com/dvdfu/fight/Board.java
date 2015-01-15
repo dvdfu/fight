@@ -37,7 +37,7 @@ public class Board {
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
 				Cell cell = new Cell(self, i, j);
-				cell.height = Math.min(Math.min(i, width - 1 - i), Math.min(j, height - 1 - j)) * 12;
+				// cell.height = Math.min(Math.min(i, width - 1 - i), Math.min(j, height - 1 - j)) * 12;
 				grid[i][j] = cell;
 				units.add(cell);
 			}
@@ -87,7 +87,7 @@ public class Board {
 				if (cell.status == Cell.Status.BIG_FIRE) {
 					firetile.setSize(24, 64);
 					firetile.setFrame(cell.statusTimer / 10);
-					firetile.draw(batch, cell.xCell * cellWidth, cell.yCell * cellHeight + cell.height);
+					firetile.draw(batch, cell.xCell * cellWidth, cell.yCell * cellHeight + cell.height - 4);
 					firetile.setSize(24, 24);
 				}
 				tile.setSize(cellWidth, cell.height);
@@ -99,18 +99,6 @@ public class Board {
 	}
 	
 	private void update() {
-		for (int j = height - 1; j >= 0; j--) {
-			for (int i = 0; i < width; i++) {
-				Cell cell = grid[i][j];
-				if (p1.attack[1].using && i == p1.xCell && j == p1.yCell && p1.height == cell.height) {
-					cell.setStatus(Cell.Status.ON_FIRE);
-				}
-				if (p1.attack[0].using && Math.abs(p1.xCell - i) + Math.abs(p1.yCell - j) == (int) p1.attack[0].timer) {
-					cell.targeted = true;
-				}
-			}
-		}
-		
 		for (int i = 0 ; i < units.size(); i++) {
 			BoardUnit b = units.get(i);
 			b.update();
@@ -145,6 +133,11 @@ public class Board {
 	public Cell getCell(int x, int y) {
 		x = MathUtils.clamp(x, 0, width - 1);
 		y = MathUtils.clamp(y, 0, height - 1);
+		return grid[x][y];
+	}
+	
+	public Cell getCellUnsafe(int x, int y) {
+		if (x < 0 || x >= width || y < 0 || y >= height) return null;
 		return grid[x][y];
 	}
 

@@ -3,14 +3,17 @@ package com.dvdfu.fight;
 import com.dvdfu.fight.components.GamepadComponent;
 
 public abstract class Attack {
-	int mana;
+	int manaCost;
 	int damage;
-	float cooldown;
-	float windup;
-	float timer;
+	int cooldown;
+	int windup;
+	int timer;
 	boolean using;
 	GamepadComponent.Button button;
-	boolean pressUse;
+	boolean pressToUse; // skill activated by press, not hold
+	boolean multipleCasts; // skill can be interrupted by second cast
+	boolean useInAir;
+	int stage; // for multi-stage skills
 	
 	Player player;
 	Board board;
@@ -20,26 +23,25 @@ public abstract class Attack {
 		this.board = board;
 		this.player = player;
 		this.gp = gp;
+		multipleCasts = true;
+		pressToUse = true;
+		useInAir = true;
+		init();
 	}
 	
-	public abstract void use();
+	public abstract void init();
 	
-	public void mana() {
-		if (!using && player.manaTicks >= mana) {
-			player.manaTicks -= mana;
-			using = true;
+	public abstract void using();
+	
+	public void use() {
+		using = true;
+	}
+	
+	public void pressed() {
+		if (!multipleCasts && using) return;
+		if (!useInAir && !player.grounded) return;
+		if (player.useMana(this)) {
+			use();
 		}
-	}
-	
-	public void press() {
-		mana();
-	}
-	
-	public boolean keyPressed() {
-		return gp.keyPressed(button);
-	}
-	
-	public boolean keyDown() {
-		return gp.keyDown(button);
 	}
 }
