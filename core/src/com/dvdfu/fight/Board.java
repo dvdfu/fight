@@ -84,6 +84,12 @@ public class Board {
 					firetile.setFrame(cell.statusTimer / 10);
 					firetile.draw(batch, cell.xCell * cellWidth, cell.yCell * cellHeight + cell.height);
 				}
+				if (cell.status == Cell.Status.BIG_FIRE) {
+					firetile.setSize(24, 64);
+					firetile.setFrame(cell.statusTimer / 10);
+					firetile.draw(batch, cell.xCell * cellWidth, cell.yCell * cellHeight + cell.height);
+					firetile.setSize(24, 24);
+				}
 				tile.setSize(cellWidth, cell.height);
 				tile.setColor(0.5f, 0.3f, 0.2f);
 				tile.draw(batch, cell.xCell * cellWidth, cell.yCell * cellHeight);
@@ -96,10 +102,10 @@ public class Board {
 		for (int j = height - 1; j >= 0; j--) {
 			for (int i = 0; i < width; i++) {
 				Cell cell = grid[i][j];
-				if (p1.a2.using && i == p1.xCell && j == p1.yCell && p1.height == cell.height) {
+				if (p1.attack[1].using && i == p1.xCell && j == p1.yCell && p1.height == cell.height) {
 					cell.setStatus(Cell.Status.ON_FIRE);
 				}
-				if (p1.a1.using && Math.abs(p1.xCell - i) + Math.abs(p1.yCell - j) == p1.attackRange) {
+				if (p1.attack[0].using && Math.abs(p1.xCell - i) + Math.abs(p1.yCell - j) == (int) p1.attack[0].timer) {
 					cell.targeted = true;
 				}
 			}

@@ -18,18 +18,20 @@ public abstract class Player extends BoardUnit {
 	SpriteComponent sprite;
 	boolean moving;
 	boolean grounded;
+	boolean canMove;
 	
 	float manaFill;
 	float manaRegen;
 	int manaTicks;
 	int manaMax;
 	
-	Attack a1, a2, a3, a4;
+	Attack[] attack = new Attack[4];
 	
 	GamepadComponent gp;
 	enum Direction { UP, DOWN, LEFT, RIGHT };
 	Direction moveDirection;
 	LinkedList<Direction> moveQueue;
+	boolean firstMove;
 	int[] directionKey = { Input.Keys.W, Input.Keys.S, Input.Keys.A, Input.Keys.D };
 
 	public Player(Board board) {
@@ -119,7 +121,7 @@ public abstract class Player extends BoardUnit {
 		}
 		
 
-		if (!moving) {
+		if (!moving && canMove) {
 			if (moveQueue.size() < 2) {
 				if (gp.keyDown(GamepadComponent.Button.RIGHT)) {
 					moveDirection = Direction.RIGHT;
@@ -139,6 +141,24 @@ public abstract class Player extends BoardUnit {
 			if (!moveQueue.isEmpty()) {
 				testMove(moveQueue.remove());
 			}
+			if (gp.keyPressed(GamepadComponent.Button.RIGHT)) {
+				moveDirection = Direction.RIGHT;
+				testMove(Direction.RIGHT);
+				firstMove = true;
+			} else if (gp.keyPressed(GamepadComponent.Button.LEFT)) {
+				moveDirection = Direction.LEFT;
+				testMove(Direction.LEFT);
+				firstMove = true;
+			}
+			if (gp.keyPressed(GamepadComponent.Button.UP)) {
+				moveDirection = Direction.UP;
+				testMove(Direction.UP);
+				firstMove = true;
+			} else if (gp.keyPressed(GamepadComponent.Button.DOWN)) {
+				moveDirection = Direction.DOWN;
+				testMove(Direction.DOWN);
+				firstMove = true;
+			}
 		}
 		
 		xCellNext = xCell + xMove;
@@ -147,7 +167,7 @@ public abstract class Player extends BoardUnit {
 		if (moving) {
 			x = (MathUtils.lerp(xCell, xCellNext, moveTime / moveTimeMax) + 0.5f) * board.cellWidth;
 			y = (MathUtils.lerp(yCell, yCellNext, moveTime / moveTimeMax) + 0.5f) * board.cellHeight;
-			if (moveTime * 2 < moveTimeMax) {
+			if (!firstMove && moveTime * 2 < moveTimeMax) {
 				switch (moveDirection) {
 				case RIGHT:
 					if (!gp.keyDown(GamepadComponent.Button.RIGHT)) cancelMoving();
@@ -165,6 +185,7 @@ public abstract class Player extends BoardUnit {
 			}
 			moveTime++;
 			if (moveTime >= moveTimeMax) {
+				firstMove = false;
 				xCell += xMove;
 				yCell += yMove;
 				endMoving();
@@ -174,6 +195,7 @@ public abstract class Player extends BoardUnit {
 				}
 			}
 		}
+		canMove = true;
 		gp.update();
 	}
 

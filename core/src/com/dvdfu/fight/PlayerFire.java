@@ -8,8 +8,6 @@ import com.dvdfu.fight.components.GamepadComponent;
 import com.dvdfu.fight.components.SpriteComponent;
 
 public class PlayerFire extends Player {
-	float attackTimer;
-	int attackRange;
 	int numFires;
 	LinkedList<Fireball> fireballs;
 	SpriteComponent manaSprite;
@@ -27,31 +25,97 @@ public class PlayerFire extends Player {
 		manaFill = 0;
 		manaTicks = manaMax;
 		
-		a1 = new Attack(); // flamewheel
-		a1.mana = 1;
-		a1.damage = 1;
-		a1.cooldown = 0;
-		a1.windup = 0;
+		attack[0] = new Attack(board, this, gp) {
+			public void use() {
+				if (gp.keyDown(button)) {
+					if (timer < 3) {
+						timer += 0.05f;
+					} else {
+						timer = 3;
+						useAttack0();
+					}
+				} else {
+					useAttack0();
+				}
+			}
+
+			public void mana() {
+				super.mana();
+				timer = 1;
+			}
+		};
+		attack[0].mana = 1;
+		attack[0].damage = 1;
+		attack[0].cooldown = 0;
+		attack[0].windup = 0;
+		attack[0].button = GamepadComponent.Button.A;
+		attack[0].pressUse = false;
 		
-		a2 = new Attack(); // flamerun
-		a2.mana = 1;
-		a2.damage = 1;
-		a2.cooldown = 0;
-		a2.windup = 0;
+		attack[1] = new Attack(board, this, gp) {
+			public void use() {}
+
+			public void press() {
+				using ^= true;
+				super.press();
+			}
+		};
+		attack[1].mana = 1;
+		attack[1].damage = 1;
+		attack[1].cooldown = 0;
+		attack[1].windup = 0;
+		attack[1].button = GamepadComponent.Button.B;
+		attack[1].pressUse = true;
 		
-		a3 = new Attack(); // firebullet
-		a3.mana = 1;
-		a3.damage = 1;
-		a3.cooldown = 0;
-		a3.windup = 0;
+		attack[2] = new Attack(board, this, gp) {
+			public void use() {
+				if (attack[2].timer >= attack[2].windup) {
+					attack[2].timer = 0;
+					attack[2].using = false;
+					int[] ax = new int[3], ay = new int[3];
+					switch (moveDirection) {
+					case DOWN:
+						ax = new int[] { 0, 0, 0 };
+						ay = new int[] { -1, -2, -3 };
+						break;
+					case LEFT:
+						ax = new int[] { -1, -2, -3 };
+						ay = new int[] { 0, 0, 0 };
+						break;
+					case RIGHT:
+						ax = new int[] { 1, 2, 3 };
+						ay = new int[] { 0, 0, 0 };
+						ax = new int[] { 1, 2, 3 };
+						break;
+					case UP:
+						ax = new int[] { 0, 0, 0 };
+						ay = new int[] { 1, 2, 3 };
+						break;
+					default:
+						break;
+					}
+					for (int i = 0; i < 3; i++) {
+						board.getCell(xCell + ax[i], yCell + ay[i]).setStatus(Cell.Status.BIG_FIRE);
+					}
+				} else {
+					attack[2].timer++;
+					canMove = false;
+				}
+			}
+		};
+		attack[2].mana = 1;
+		attack[2].damage = 1;
+		attack[2].cooldown = 0;
+		attack[2].windup = 30;
+		attack[2].button = GamepadComponent.Button.X;
+		attack[2].pressUse = false;
 	}
 	
 	protected void startMoving() {
-		if (a2.using && grounded) {
-			if (manaTicks >= a2.mana) {
-				manaTicks -= a2.mana;
+		if (attack[1].using && grounded) {
+			if (manaTicks >= attack[1].mana) {
+				manaTicks -= attack[1].mana;
 			} else {
-				a2.using = false;
+				attack[1].using = false;
 			}
 		}
 	}
@@ -75,50 +139,29 @@ public class PlayerFire extends Player {
 			}
 		}
 		
-		if (gp.keyPressed(GamepadComponent.Button.A)) {
-			a2.using ^= true;
-		}
-		
-		if (gp.keyPressed(GamepadComponent.Button.B)) {
-			if (!a1.using && manaTicks >= a1.mana) {
-				manaTicks -= a1.mana;
-				a1.using = true;
-				attackTimer = 1;
-			}
-		}
-		
-		if (gp.keyPressed(GamepadComponent.Button.X)) {
-			if (!a3.using && manaTicks >= a3.mana) {
-				manaTicks -= a3.mana;
-				FireBullet fb = board.poolFirebullet.obtain();
-				fb.set(moveDirection, xCell, yCell, height + 8);
-				board.units.add(fb);
-			}
-		}
-		
-		if (a1.using) {
-			if (gp.keyDown(GamepadComponent.Button.B)) {
-				attackRange = (int) attackTimer;
-				if (attackTimer < 3) {
-					attackTimer += 0.05f;
-				} else {
-					attackTimer = 3;
-					useAttack1();
+		for (int i = 0; i < 3; i++) {
+			Attack a = attack[i];
+			if (a.pressUse) {
+				if (gp.keyPressed(attack[i].button)) {
+					a.press();
 				}
-			} else {
-				useAttack1();
+			} else if (gp.keyDown(attack[i].button)) {
+				a.press();
+			}
+			if (a.using) {
+				a.use();
 			}
 		}
 		
 		super.update();
 	}
 	
-	private void useAttack1() {
-		if (attackRange > 0) {
+	private void useAttack0() {
+		if ((int) attack[0].timer > 0) {
 			LinkedList<Cell> cellList = new LinkedList<Cell>();
 			for (int i = 0; i < board.width; i++) {
 				for (int j = 0; j < board.height; j++) {
-					if (Math.abs(xCell - i) + Math.abs(yCell - j) == attackRange) {
+					if (Math.abs(xCell - i) + Math.abs(yCell - j) == (int) attack[0].timer) {
 						cellList.add(board.getCell(i, j));
 					}
 				}
@@ -131,8 +174,8 @@ public class PlayerFire extends Player {
 				fireballs.add(f);
 				board.units.add(f);
 			}
-			a1.using = false;
-			attackTimer = 0;
+			attack[0].using = false;
+			attack[0].timer = 0;
 		}
 	}
 	

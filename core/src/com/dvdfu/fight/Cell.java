@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Cell extends BoardUnit {
 	enum Status {
-		ON_FIRE, NONE
+		ON_FIRE, BIG_FIRE, NONE
 	};
 
 	Status status;
@@ -37,6 +37,9 @@ public class Cell extends BoardUnit {
 		switch (status) {
 		case ON_FIRE:
 			statusTimer = 120;
+			break;
+		case BIG_FIRE:
+			statusTimer = 60;
 			break;
 		case NONE:
 		default:
