@@ -2,18 +2,18 @@ package com.dvdfu.fight;
 
 import java.util.LinkedList;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
+import com.dvdfu.fight.components.GamepadComponent;
 import com.dvdfu.fight.components.SpriteComponent;
 
 public class Player {
 	Board board;
-	final float cellWidth = 24, cellHeight = 16;
 	float x, y;
 	float height;
-	float moveTimerLength = 12;
+	float moveTimerLength;
 	int moveTimer;
 	float vSpeed;
 	int xCell, yCell;
@@ -24,29 +24,34 @@ public class Player {
 	float boardHeight;
 	boolean key1, key2;
 	boolean grounded;
+	GamepadComponent gp;
 
-	enum Direction {
-		UP, DOWN, LEFT, RIGHT
-	};
-
+	enum Direction { UP, DOWN, LEFT, RIGHT };
+	Direction moveDirection;
 	LinkedList<Direction> moveQueue;
+	int[] directionKey = { Input.Keys.W, Input.Keys.S, Input.Keys.A, Input.Keys.D };
 
 	public Player(Board board) {
 		this.board = board;
 		moveQueue = new LinkedList<Direction>();
+		moveDirection = Direction.RIGHT;
+		moveTimerLength = 12;
 		pspr = new SpriteComponent(Const.atlas.findRegion("player"));
-		x = (xCell + 0.5f) * cellWidth;
-		y = (yCell + 0.5f) * cellHeight;
+		pspr.setOrigin(8, 0);
+		x = (xCell + 0.5f) * board.cellWidth;
+		y = (yCell + 0.5f) * board.cellHeight;
+		
+		gp = new GamepadComponent();
 	}
 
-	private void handleJump() {
+	protected void handleJump() {
 		boardHeight = Math.max(board.getHeight(xCell, yCell),
 				board.getHeight(xCellNext, yCellNext));
 		if (height + vSpeed < boardHeight) {
 			vSpeed = 0;
 			height = boardHeight;
 		} else if (height == boardHeight) {
-			if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+			if (gp.keyDown(GamepadComponent.Button.R)) {
 				vSpeed = 5;
 				height += vSpeed;
 			}
@@ -61,107 +66,93 @@ public class Player {
 		grounded = height == board.getHeight(xCell, yCell);
 	}
 
-	private void testMove(Direction direction, int distance) {
+	protected void testMove(Direction direction) {
+		boolean success = false;
 		switch (direction) {
 		case UP:
-			if (yCell < board.height - distance && height >= board.getHeight(xCell, yCell + distance)) {
-				moving = true;
-				moveTimer = 0;
-				yMove = distance;
-				System.out.println("UP");
-			}
+			success = yCell < board.height - 1 && height >= board.getHeight(xCell, yCell + 1) - 6;
+			if (success) yMove = 1;
 			break;
 		case DOWN:
-			if (yCell >= distance && height >= board.getHeight(xCell, yCell - distance)) {
-				moving = true;
-				moveTimer = 0;
-				yMove = -distance;
-				System.out.println("DOWN");
-			}
+			success = yCell >= 1 && height >= board.getHeight(xCell, yCell - 1) - 6;
+			if (success) yMove = -1;
 			break;
 		case LEFT:
-			if (xCell >= distance && height >= board.getHeight(xCell - distance, yCell)) {
-				moving = true;
-				moveTimer = 0;
-				xMove = -distance;
-				System.out.println("LEFT");
-			}
+			success = xCell >= 1 && height >= board.getHeight(xCell - 1, yCell) - 6;
+			if (success) xMove = -1;
 			break;
 		case RIGHT:
-			if (xCell < board.width - distance && height >= board.getHeight(xCell + distance, yCell)) {
-				moving = true;
-				moveTimer = 0;
-				xMove = distance;
-				System.out.println("RIGHT");
-			}
+			success = xCell < board.width - 1 && height >= board.getHeight(xCell + 1, yCell) - 6;
+			if (success) xMove = 1;
 			break;
+		}
+		if (success) {
+			moving = true;
+			moveTimer = 1;
+			moveDirection = direction;
 		}
 	}
 
-	public void update() {
-		key1 = Gdx.input.isKeyPressed(Input.Keys.F);
-		handleJump();
-		
-		if (moveQueue.size() < 2) {
-			if (!moving && Gdx.input.isKeyPressed(Input.Keys.W)) {
-				if (Gdx.input.isKeyJustPressed(Input.Keys.W)) {
-					moveQueue.clear();
-				}
-				moveQueue.add(Direction.UP);
-			}
-			if (!moving && Gdx.input.isKeyPressed(Input.Keys.S)) {
-				if (Gdx.input.isKeyJustPressed(Input.Keys.S)) {
-					moveQueue.clear();
-				}
-				moveQueue.add(Direction.DOWN);
-			}
-			if (!moving && Gdx.input.isKeyPressed(Input.Keys.A)) {
-				if (Gdx.input.isKeyJustPressed(Input.Keys.A)) {
-					moveQueue.clear();
-				}
-				moveQueue.add(Direction.LEFT);
-			}
-			if (!moving && Gdx.input.isKeyPressed(Input.Keys.D)) {
-				if (Gdx.input.isKeyJustPressed(Input.Keys.D)) {
-					moveQueue.clear();
-				}
-				moveQueue.add(Direction.RIGHT);
-			}
-		}
-		
-		if (!moving) {
-			if (!moveQueue.isEmpty()) {
-				testMove(moveQueue.remove(), 1);
-			}
-		}
-		
-		if (moveTimer == 0) {
-			if (board.getStatus(xCell, yCell) == Cell.Status.ON_FIRE
-					&& grounded) {
-				moveTimerLength = 6;
-			} else if (grounded) {
-				moveTimerLength = 12;
-			}
-		}
+	protected void stopMoving() {
+		moving = false;
+		moveTimer = 0;
+		xMove = 0;
+		yMove = 0;
+		x = (xCell + 0.5f) * board.cellWidth;
+		y = (yCell + 0.5f) * board.cellHeight;
+	}
 
+	public void update() {
+		handleJump();
+
+		if (!moving) {
+			if (moveQueue.size() < 2) {
+				if (gp.keyDown(GamepadComponent.Button.RIGHT)) {
+					moveQueue.add(Direction.RIGHT);
+				}
+				if (gp.keyDown(GamepadComponent.Button.LEFT)) {
+					moveQueue.add(Direction.LEFT);
+				}
+				if (gp.keyDown(GamepadComponent.Button.UP)) {
+					moveQueue.add(Direction.UP);
+				}
+				if (gp.keyDown(GamepadComponent.Button.DOWN)) {
+					moveQueue.add(Direction.DOWN);
+				}
+			}
+			if (!moveQueue.isEmpty()) {
+				testMove(moveQueue.remove());
+			}
+		}
+		
 		xCellNext = xCell + xMove;
 		yCellNext = yCell + yMove;
-
+		
 		if (moving) {
-			x = (MathUtils.lerp(xCell, xCellNext, moveTimer / moveTimerLength) + 0.5f)
-					* cellWidth;
-			y = (MathUtils.lerp(yCell, yCellNext, moveTimer / moveTimerLength) + 0.5f)
-					* cellHeight;
+			x = (MathUtils.lerp(xCell, xCellNext, moveTimer / moveTimerLength) + 0.5f) * board.cellWidth;
+			y = (MathUtils.lerp(yCell, yCellNext, moveTimer / moveTimerLength) + 0.5f) * board.cellHeight;
+			int dk = directionKey[moveDirection.ordinal()];
+			if (moveTimer * 2 < moveTimerLength) {
+				switch (moveDirection) {
+				case RIGHT:
+					if (!gp.keyDown(GamepadComponent.Button.RIGHT)) stopMoving();
+					break;
+				case LEFT:
+					if (!gp.keyDown(GamepadComponent.Button.LEFT)) stopMoving();
+					break;
+				case UP:
+					if (!gp.keyDown(GamepadComponent.Button.UP)) stopMoving();
+					break;
+				case DOWN:
+					if (!gp.keyDown(GamepadComponent.Button.DOWN)) stopMoving();
+					break;
+				}
+			}
 			moveTimer++;
-			if (moveTimer > moveTimerLength) {
-				moving = false;
-				moveTimer = 0;
+			if (moveTimer >= moveTimerLength) {
 				xCell += xMove;
 				yCell += yMove;
-				xMove = 0;
-				yMove = 0;
-				x = (xCell + 0.5f) * cellWidth;
-				y = (yCell + 0.5f) * cellHeight;
+				stopMoving();
 				if (height > board.getHeight(xCell, yCell)) {
 					height--;
 				}
@@ -170,6 +161,6 @@ public class Player {
 	}
 
 	public void draw(SpriteBatch batch) {
-		pspr.draw(batch, x - 8, y - 4 + height);
+		pspr.drawOrigin(batch, x, y - 4 + height);
 	}
 }

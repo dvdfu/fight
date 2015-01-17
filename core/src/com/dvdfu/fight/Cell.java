@@ -31,7 +31,7 @@ public class Cell {
 		this.status = status;
 		switch (status) {
 		case ON_FIRE:
-			statusTimer = 60;
+			statusTimer = 30;
 			break;
 		case NONE:
 		default:

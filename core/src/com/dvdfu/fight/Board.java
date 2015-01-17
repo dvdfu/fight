@@ -5,8 +5,9 @@ import com.dvdfu.fight.components.SpriteComponent;
 
 public class Board {
 	int width, height;
+	final int cellWidth = 24, cellHeight = 16;
 	Cell[][] grid;
-	Player p1;
+	PlayerFire p1;
 	SpriteComponent tile;
 	SpriteComponent firetile;
 	SpriteComponent pointer;
@@ -16,9 +17,9 @@ public class Board {
 		this.height = height;
 		grid = new Cell[width][height];
 		tile = new SpriteComponent(Const.atlas.findRegion("tile"));
-		firetile = new SpriteComponent(Const.atlas.findRegion("firetile"), 24);
+		firetile = new SpriteComponent(Const.atlas.findRegion("firetile"), cellWidth);
 		pointer = new SpriteComponent(Const.atlas.findRegion("pointer"));
-		p1 = new Player(this);
+		p1 = new PlayerFire(this);
 
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
@@ -26,7 +27,6 @@ public class Board {
 //				grid[i][j].height = 20 * (5 - Math.max(Math.abs(i - 4), Math.abs(j - 4)));
 //				grid[i][j].height = 20 * MathUtils.random((j + i) / 3);
 //				grid[i][j].height = 6 * ((j ^ i));
-//				grid[i][j].height = 0;
 			}
 		}
 	}
@@ -39,21 +39,21 @@ public class Board {
 		for (int j = height - 1; j >= 0; j--) {
 			for (int i = 0; i < width; i++) {
 				cell = grid[i][j];
-				tile.setSize(24, 16);
+				tile.setSize(cellWidth, cellHeight);
 				tile.setColor(1, 1, 1);
-				tile.draw(batch, cell.x * 24, cell.y * 16 + cell.height);
+				tile.draw(batch, cell.x * cellWidth, cell.y * cellHeight + cell.height);
 				if (cell.status == Cell.Status.ON_FIRE) {
-					firetile.draw(batch, cell.x * 24, cell.y * 16 + cell.height);
+					firetile.draw(batch, cell.x * cellWidth, cell.y * cellHeight + cell.height);
 				}
-				tile.setSize(24, cell.height);
+				tile.setSize(cellWidth, cell.height);
 				tile.setColor(0.5f, 0.3f, 0.2f);
-				tile.draw(batch, cell.x * 24, cell.y * 16);
+				tile.draw(batch, cell.x * cellWidth, cell.y * cellHeight);
 			}
 			if (p1.yCell == j) {
 				tile.setAlpha(0.3f);
-				tile.setSize(24, 16);
+				tile.setSize(cellWidth, cellHeight);
 				tile.setColor(0, 0, 0);
-				tile.draw(batch, p1.xCell * 24, p1.yCell * 16 + getHeight(p1.xCell, p1.yCell));
+				tile.draw(batch, p1.xCell * cellWidth, p1.yCell * cellHeight + getHeight(p1.xCell, p1.yCell));
 				tile.setAlpha(1);
 			}
 			if (p1.yCellNext == j || p1.yCell == j) {
@@ -65,8 +65,8 @@ public class Board {
 			for (int i = 0; i < width; i++) {
 				cell = grid[i][j];
 				if (p1.xCell == i && p1.yCell == j) {
-//					pointer.drawCentered(batch, cell.x * 24 + 12, cell.y * 16
-//							+ 16 + cell.height);
+//					pointer.drawCentered(batch, cell.x * cellWidth + 12, cell.y * cellHeight
+//							+ cellHeight + cell.height);
 				}
 			}
 		}
@@ -78,7 +78,7 @@ public class Board {
 		for (int j = height - 1; j >= 0; j--) {
 			for (int i = 0; i < width; i++) {
 				cell = grid[i][j];
-				if (p1.key1 && i == p1.xCell && j == p1.yCell && p1.height == cell.height) {
+				if (p1.onFire && i == p1.xCell && j == p1.yCell && p1.height == cell.height) {
 					cell.setStatus(Cell.Status.ON_FIRE);
 				}
 				cell.update();
