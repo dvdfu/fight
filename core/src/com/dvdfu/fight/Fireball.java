@@ -2,29 +2,24 @@ package com.dvdfu.fight;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Pool.Poolable;
 import com.dvdfu.fight.components.SpriteComponent;
 
-public class Fireball extends BoardUnit {
+public class Fireball extends BoardUnit implements Poolable {
+	final float timerMax = 60f;
+	final float fallSpeed = -0.1f;
 	SpriteComponent sprite;
 	Cell cell;
 	int timer;
 	int xOr, yOr;
-	final float timerMax = 60f;
-	final float fallSpeed = -0.1f;
 	float vSpeed;
 	boolean dead;
 	
-	public Fireball(Board board, Cell cell, int xOr, int yOr, float height) {
+	public Fireball(Board board) {
 		super(board);
-		this.cell = cell;
-		this.xOr = xOr;
-		this.yOr = yOr;
-		x = xOr * board.cellWidth;
-		y = yOr * board.cellHeight;
-		this.height = height;
 		sprite = new SpriteComponent(Const.atlas.findRegion("fireball"));
-		vSpeed = (cell.height - height) / timerMax - fallSpeed * timerMax / 2;
 		zPriority = 1;
+		reset();
 	}
 
 	public void update() {
@@ -46,5 +41,20 @@ public class Fireball extends BoardUnit {
 	
 	public void draw(SpriteBatch batch) {
 		sprite.drawCentered(batch, x + 12, y + height + 8);
+	}
+	
+	public void set(Cell cell, int xOr, int yOr, float height) {
+		this.cell = cell;
+		this.xOr = xOr;
+		this.yOr = yOr;
+		x = xOr * board.cellWidth;
+		y = yOr * board.cellHeight;
+		this.height = height;
+		vSpeed = (cell.height - height) / timerMax - fallSpeed * timerMax / 2;
+	}
+
+	public void reset() {
+		dead = false;
+		timer = 0;
 	}
 }

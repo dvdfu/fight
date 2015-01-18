@@ -5,9 +5,11 @@ import java.util.Comparator;
 import java.util.LinkedList;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.Pool;
 import com.dvdfu.fight.components.SpriteComponent;
 
 public class Board {
+	final Board self = this;
 	int width, height;
 	final int cellWidth = 24, cellHeight = 16;
 	Cell[][] grid;
@@ -16,6 +18,8 @@ public class Board {
 	SpriteComponent firetile;
 	SpriteComponent pointer;
 	LinkedList<BoardUnit> units;
+	
+	Pool<Fireball> poolFireball;
 
 	public Board(int width, int height) {
 		this.width = width;
@@ -24,28 +28,29 @@ public class Board {
 		tile = new SpriteComponent(Const.atlas.findRegion("tile"));
 		firetile = new SpriteComponent(Const.atlas.findRegion("firetile"), cellWidth);
 		pointer = new SpriteComponent(Const.atlas.findRegion("pointer"));
-		p1 = new PlayerFire(this);
+		p1 = new PlayerFire(self);
 		units = new LinkedList<BoardUnit>();
 
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
-				Cell cell = new Cell(this, i, j);
-//				cell.height = ((i ^ j) / 4) * 6;
+				Cell cell = new Cell(self, i, j);
 				grid[i][j] = cell;
-//				grid[i][j].height = 20 * (5 - Math.max(Math.abs(i - 4), Math.abs(j - 4)));
-//				grid[i][j].height = 20 * MathUtils.random((j + i) / 3);
-//				grid[i][j].height = 6 * ((j ^ i));
 				units.add(cell);
 			}
 		}
 		
 		units.add(p1);
+		
+		poolFireball = new Pool<Fireball>() {
+			protected Fireball newObject() {
+				return new Fireball(self);
+			}
+		};
 	}
 
 	public void draw(SpriteBatch batch) {
 		update();
 		
-
 		for (int i = 0 ; i < units.size(); i++) {
 			BoardUnit b = units.get(i);
 			if (b instanceof Cell) {
@@ -73,11 +78,6 @@ public class Board {
 				tile.draw(batch, cell.xCell * cellWidth, cell.yCell * cellHeight);
 			}
 			b.draw(batch);
-			if (b instanceof Fireball && ((Fireball) b).dead) {
-				((Fireball) b).cell.setStatus(Cell.Status.ON_FIRE);
-				units.remove(i);
-				i--;
-			}
 		}
 	}
 	
@@ -97,10 +97,14 @@ public class Board {
 		for (int i = 0 ; i < units.size(); i++) {
 			BoardUnit b = units.get(i);
 			b.update();
-			if (b instanceof Fireball && ((Fireball) b).dead) {
-				((Fireball) b).cell.setStatus(Cell.Status.ON_FIRE);
-				units.remove(i);
-				i--;
+			if (b instanceof Fireball) {
+				Fireball f = (Fireball) b;
+				if (f.dead) {
+					f.cell.setStatus(Cell.Status.ON_FIRE);
+					poolFireball.free(f);
+					units.remove(i);
+					i--;
+				}
 			}
 		}
 		

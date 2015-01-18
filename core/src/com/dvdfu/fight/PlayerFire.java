@@ -23,7 +23,7 @@ public class PlayerFire extends Player {
 		fireballs = new LinkedList<Fireball>();
 		
 		manaMax = 16;
-		manaRegen = 0.025f;
+		manaRegen = 0.1f;
 		manaFill = 0;
 		manaTicks = manaMax;
 		
@@ -40,7 +40,7 @@ public class PlayerFire extends Player {
 		a2.windup = 0;
 	}
 	
-	protected void startMoving() {
+	protected void finishMoving() {
 		if (gp.keyDown(GamepadComponent.Button.A) && grounded) {
 			if (manaTicks >= a2.mana) {
 				onFire = true;
@@ -92,7 +92,8 @@ public class PlayerFire extends Player {
 				
 				while (!cellList.isEmpty()) {
 					Cell cell = cellList.remove();
-					Fireball f = new Fireball(board, cell, xCell, yCell, height);
+					Fireball f = board.poolFireball.obtain();
+					f.set(cell, xCell, yCell, height);
 					fireballs.add(f);
 					board.units.add(f);
 				}

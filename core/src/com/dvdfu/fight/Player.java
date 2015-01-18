@@ -95,6 +95,8 @@ public abstract class Player extends BoardUnit {
 	}
 	
 	protected void startMoving() {}
+	
+	protected void finishMoving() {}
 
 	private void stopMoving() {
 		moving = false;
@@ -162,6 +164,7 @@ public abstract class Player extends BoardUnit {
 			if (moveTime >= moveTimeMax) {
 				xCell += xMove;
 				yCell += yMove;
+				finishMoving();
 				stopMoving();
 				if (height > board.getHeight(xCell, yCell)) {
 					height--;
