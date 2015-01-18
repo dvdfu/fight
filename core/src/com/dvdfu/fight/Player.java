@@ -170,6 +170,7 @@ public abstract class Player extends BoardUnit {
 				}
 			}
 		}
+		gp.update();
 	}
 
 	public void draw(SpriteBatch batch) {
