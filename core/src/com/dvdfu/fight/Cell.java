@@ -36,7 +36,7 @@ public class Cell extends BoardUnit {
 		this.status = status;
 		switch (status) {
 		case ON_FIRE:
-			statusTimer = 80;
+			statusTimer = 120;
 			break;
 		case NONE:
 		default:

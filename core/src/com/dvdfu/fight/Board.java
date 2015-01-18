@@ -27,6 +27,7 @@ public class Board {
 		grid = new Cell[width][height];
 		tile = new SpriteComponent(Const.atlas.findRegion("tile"));
 		firetile = new SpriteComponent(Const.atlas.findRegion("firetile"), cellWidth);
+		firetile.setSize(24, 24);
 		pointer = new SpriteComponent(Const.atlas.findRegion("pointer"));
 		p1 = new PlayerFire(self);
 		units = new LinkedList<BoardUnit>();
@@ -34,6 +35,7 @@ public class Board {
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
 				Cell cell = new Cell(self, i, j);
+				cell.height = Math.min(Math.min(i, width - 1 - i), Math.min(j, height - 1 - j)) / 2 * 12 + 12;
 				grid[i][j] = cell;
 				units.add(cell);
 			}
@@ -71,6 +73,7 @@ public class Board {
 					tile.setAlpha(1);
 				}
 				if (cell.status == Cell.Status.ON_FIRE) {
+					firetile.setFrame(cell.statusTimer / 10);
 					firetile.draw(batch, cell.xCell * cellWidth, cell.yCell * cellHeight + cell.height);
 				}
 				tile.setSize(cellWidth, cell.height);
@@ -108,7 +111,6 @@ public class Board {
 			}
 		}
 		
-		firetile.update();
 		Collections.sort(units, new Comparator<BoardUnit>() {
 			public int compare(BoardUnit a, BoardUnit b) {
 				if (b.getZIndex() == a.getZIndex()) 

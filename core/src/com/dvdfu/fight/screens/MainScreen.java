@@ -16,7 +16,6 @@ public class MainScreen extends AbstractScreen {
 		batch = new SpriteBatch();
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		camera.position.set(120, 80, 0);
-		camera.zoom = 1 / 2f;
 		board = new Board(10, 10);
 	}
 

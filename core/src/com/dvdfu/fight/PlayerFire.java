@@ -21,6 +21,7 @@ public class PlayerFire extends Player {
 		sprite.setOrigin(8, 0);
 		manaSprite = new SpriteComponent(Const.atlas.findRegion("mana"));
 		fireballs = new LinkedList<Fireball>();
+		moveTimeMax = 12;
 		
 		manaMax = 16;
 		manaRegen = 0.1f;
@@ -63,7 +64,11 @@ public class PlayerFire extends Player {
 					}
 				}
 			}
-			moveTimeMax = 12 - numFires / 3;
+			if (board.getStatus(xCell, yCell) == Cell.Status.ON_FIRE) {
+				moveTimeMax = 6;
+			} else {
+				moveTimeMax = 12;
+			}
 		}
 		
 		if (gp.keyDown(GamepadComponent.Button.B)) {

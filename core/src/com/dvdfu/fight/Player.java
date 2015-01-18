@@ -36,7 +36,6 @@ public abstract class Player extends BoardUnit {
 		super(board);
 		moveQueue = new LinkedList<Direction>();
 		moveDirection = Direction.RIGHT;
-		moveTimeMax = 12;
 		x = (xCell + 0.5f) * board.cellWidth;
 		y = (yCell + 0.5f) * board.cellHeight;
 		steepMax = 6;

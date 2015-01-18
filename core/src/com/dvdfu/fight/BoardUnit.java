@@ -18,6 +18,7 @@ public abstract class BoardUnit {
 	public abstract void draw(SpriteBatch batch);
 	
 	public int getZIndex() {
+		// intended to be overwritten e.g. by Player
 		return yCell;
 	}
 }

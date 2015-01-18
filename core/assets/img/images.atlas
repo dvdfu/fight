@@ -1,61 +1,61 @@
 
 images.png
-size: 256,32
+size: 128,64
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
 edge
   rotate: false
-  xy: 94, 10
+  xy: 2, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 fireball
   rotate: false
-  xy: 184, 18
+  xy: 76, 22
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
   index: -1
 firetile
   rotate: false
-  xy: 2, 2
-  size: 72, 24
-  orig: 72, 24
+  xy: 2, 20
+  size: 72, 36
+  orig: 72, 36
   offset: 0, 0
   index: -1
 health
   rotate: false
-  xy: 112, 10
+  xy: 94, 40
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 mana
   rotate: false
-  xy: 130, 10
+  xy: 20, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 player
   rotate: false
-  xy: 76, 2
+  xy: 76, 32
   size: 16, 24
   orig: 16, 24
   offset: 0, 0
   index: -1
 pointer
   rotate: false
-  xy: 148, 10
+  xy: 38, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 tile
   rotate: false
-  xy: 166, 10
+  xy: 56, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0

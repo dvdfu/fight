@@ -5,16 +5,29 @@ import java.util.Stack;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap.Format;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
+import com.dvdfu.fight.components.ShaderComponent;
 import com.dvdfu.fight.screens.AbstractScreen;
 import com.dvdfu.fight.screens.MainScreen;
 
 public class MainGame extends Game {
 	private Stack<AbstractScreen> screens;
+	
+	private FrameBuffer fb;
+	private SpriteBatch fbBatch;
 
 	public void create() {
 		new Const();
 		screens = new Stack<AbstractScreen>();
 		enterScreen(new MainScreen(this));
+		
+		fb = new FrameBuffer(Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
+		fb.getColorBufferTexture().setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
+		fbBatch = new SpriteBatch();
+		fbBatch.setShader(new ShaderComponent("shaders/scale2.vsh", "shaders/pass.fsh"));
 	}
 
 	public void enterScreen(AbstractScreen screen) {
@@ -46,11 +59,16 @@ public class MainGame extends Game {
 	public void dispose() {}
 
 	public void render() {
+		fb.begin();
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		if (getScreen() != null) {
 			super.render();
 		}
+		fb.end();
+		fbBatch.begin();
+		fbBatch.draw(fb.getColorBufferTexture(), 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), 0, 0, 1, 1);
+		fbBatch.end();
 	}
 
 	public void resize(int width, int height) {

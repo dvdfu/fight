@@ -6,8 +6,8 @@ import com.badlogic.gdx.utils.Pool.Poolable;
 import com.dvdfu.fight.components.SpriteComponent;
 
 public class Fireball extends BoardUnit implements Poolable {
-	final float timerMax = 60f;
-	final float fallSpeed = -0.1f;
+	final float timerMax = 45f;
+	final float fallSpeed = -0.3f;
 	SpriteComponent sprite;
 	Cell cell;
 	int timer;
@@ -40,7 +40,14 @@ public class Fireball extends BoardUnit implements Poolable {
 	}
 	
 	public void draw(SpriteBatch batch) {
+		sprite.setColor(1, 1, 1);
+		sprite.setAlpha(1);
+		sprite.setSize(8, 8);
 		sprite.drawCentered(batch, x + 12, y + height + 8);
+		sprite.setColor(0, 0, 0);
+		sprite.setAlpha(0.3f);
+		sprite.setSize(8, 5);
+		sprite.drawCentered(batch, x + 12, y + board.getHeight(xCell, yCell) + 8);
 	}
 	
 	public void set(Cell cell, int xOr, int yOr, float height) {
