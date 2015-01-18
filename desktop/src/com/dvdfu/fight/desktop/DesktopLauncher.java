@@ -9,7 +9,8 @@ public class DesktopLauncher {
 	public static void main (String[] arg) {
 		TexturePacker.process("unpacked/", "/home/david/workspace/fight/fight/core/assets/img", "images");
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
+		config.width = 960;
+		config.height = 640;
 		new LwjglApplication(new MainGame(), config);
-		
 	}
 }

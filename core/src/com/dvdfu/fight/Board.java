@@ -88,7 +88,7 @@ public class Board {
 				if (p1.onFire && i == p1.xCell && j == p1.yCell && p1.height == cell.height) {
 					cell.setStatus(Cell.Status.ON_FIRE);
 				}
-				if (p1.attacking && Math.abs(p1.xCell - i) + Math.abs(p1.yCell - j) == p1.attackRange) {
+				if (p1.a1.using && Math.abs(p1.xCell - i) + Math.abs(p1.yCell - j) == p1.attackRange) {
 					cell.targeted = true;
 				}
 			}

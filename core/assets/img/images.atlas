@@ -13,7 +13,7 @@ edge
   index: -1
 fireball
   rotate: false
-  xy: 148, 18
+  xy: 184, 18
   size: 8, 8
   orig: 8, 8
   offset: 0, 0
@@ -25,6 +25,20 @@ firetile
   orig: 72, 24
   offset: 0, 0
   index: -1
+health
+  rotate: false
+  xy: 112, 10
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
+mana
+  rotate: false
+  xy: 130, 10
+  size: 16, 16
+  orig: 16, 16
+  offset: 0, 0
+  index: -1
 player
   rotate: false
   xy: 76, 2
@@ -34,14 +48,14 @@ player
   index: -1
 pointer
   rotate: false
-  xy: 112, 10
+  xy: 148, 10
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 tile
   rotate: false
-  xy: 130, 10
+  xy: 166, 10
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
