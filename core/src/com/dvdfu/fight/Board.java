@@ -1,5 +1,9 @@
 package com.dvdfu.fight;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.dvdfu.fight.components.SpriteComponent;
 
@@ -11,6 +15,7 @@ public class Board {
 	SpriteComponent tile;
 	SpriteComponent firetile;
 	SpriteComponent pointer;
+	LinkedList<BoardUnit> units;
 
 	public Board(int width, int height) {
 		this.width = width;
@@ -20,72 +25,93 @@ public class Board {
 		firetile = new SpriteComponent(Const.atlas.findRegion("firetile"), cellWidth);
 		pointer = new SpriteComponent(Const.atlas.findRegion("pointer"));
 		p1 = new PlayerFire(this);
+		units = new LinkedList<BoardUnit>();
 
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
-				grid[i][j] = new Cell(i, j);
+				Cell cell = new Cell(this, i, j);
+//				cell.height = ((i ^ j) / 4) * 6;
+				grid[i][j] = cell;
 //				grid[i][j].height = 20 * (5 - Math.max(Math.abs(i - 4), Math.abs(j - 4)));
 //				grid[i][j].height = 20 * MathUtils.random((j + i) / 3);
 //				grid[i][j].height = 6 * ((j ^ i));
+				units.add(cell);
 			}
 		}
+		
+		units.add(p1);
 	}
 
 	public void draw(SpriteBatch batch) {
-		Cell cell;
-		p1.update();
 		update();
+		
 
-		for (int j = height - 1; j >= 0; j--) {
-			for (int i = 0; i < width; i++) {
-				cell = grid[i][j];
+		for (int i = 0 ; i < units.size(); i++) {
+			BoardUnit b = units.get(i);
+			if (b instanceof Cell) {
+				Cell cell = (Cell) b;
 				tile.setSize(cellWidth, cellHeight);
-				tile.setColor(1, 1, 1);
-				tile.draw(batch, cell.x * cellWidth, cell.y * cellHeight + cell.height);
+				if (cell.targeted) {
+					tile.setColor(1, 1, 0);
+				} else {
+					float ss = 1 - cell.height / 100f;
+					tile.setColor(ss, ss, ss);
+				}
+				tile.draw(batch, cell.xCell * cellWidth, cell.yCell * cellHeight + cell.height);
+				if (p1.xCell == cell.xCell && p1.yCell == cell.yCell) {
+					tile.setAlpha(0.3f);
+					tile.setSize(cellWidth, cellHeight);
+					tile.setColor(0, 0, 0);
+					tile.draw(batch, p1.xCell * cellWidth, p1.yCell * cellHeight + getHeight(p1.xCell, p1.yCell));
+					tile.setAlpha(1);
+				}
 				if (cell.status == Cell.Status.ON_FIRE) {
-					firetile.draw(batch, cell.x * cellWidth, cell.y * cellHeight + cell.height);
+					firetile.draw(batch, cell.xCell * cellWidth, cell.yCell * cellHeight + cell.height);
 				}
 				tile.setSize(cellWidth, cell.height);
 				tile.setColor(0.5f, 0.3f, 0.2f);
-				tile.draw(batch, cell.x * cellWidth, cell.y * cellHeight);
+				tile.draw(batch, cell.xCell * cellWidth, cell.yCell * cellHeight);
 			}
-			if (p1.yCell == j) {
-				tile.setAlpha(0.3f);
-				tile.setSize(cellWidth, cellHeight);
-				tile.setColor(0, 0, 0);
-				tile.draw(batch, p1.xCell * cellWidth, p1.yCell * cellHeight + getHeight(p1.xCell, p1.yCell));
-				tile.setAlpha(1);
-			}
-			if (p1.yCellNext == j || p1.yCell == j) {
-				p1.draw(batch);
+			b.draw(batch);
+			if (b instanceof Fireball && ((Fireball) b).dead) {
+				((Fireball) b).cell.setStatus(Cell.Status.ON_FIRE);
+				units.remove(i);
+				i--;
 			}
 		}
-
-		for (int j = height - 1; j >= 0; j--) {
-			for (int i = 0; i < width; i++) {
-				cell = grid[i][j];
-				if (p1.xCell == i && p1.yCell == j) {
-//					pointer.drawCentered(batch, cell.x * cellWidth + 12, cell.y * cellHeight
-//							+ cellHeight + cell.height);
-				}
-			}
-		}
-
 	}
 	
 	private void update() {
-		Cell cell;
 		for (int j = height - 1; j >= 0; j--) {
 			for (int i = 0; i < width; i++) {
-				cell = grid[i][j];
+				Cell cell = grid[i][j];
 				if (p1.onFire && i == p1.xCell && j == p1.yCell && p1.height == cell.height) {
 					cell.setStatus(Cell.Status.ON_FIRE);
 				}
-				cell.update();
+				if (p1.attacking && Math.abs(p1.xCell - i) + Math.abs(p1.yCell - j) == p1.attackRange) {
+					cell.targeted = true;
+				}
+			}
+		}
+		
+		for (int i = 0 ; i < units.size(); i++) {
+			BoardUnit b = units.get(i);
+			b.update();
+			if (b instanceof Fireball && ((Fireball) b).dead) {
+				((Fireball) b).cell.setStatus(Cell.Status.ON_FIRE);
+				units.remove(i);
+				i--;
 			}
 		}
 		
 		firetile.update();
+		Collections.sort(units, new Comparator<BoardUnit>() {
+			public int compare(BoardUnit a, BoardUnit b) {
+				if (b.getZIndex() == a.getZIndex()) 
+					return (int) (b.zPriority - a.zPriority);
+				return b.getZIndex() - a.getZIndex();
+			}
+		});
 	}
 	
 	public Cell getCell(int x, int y) {

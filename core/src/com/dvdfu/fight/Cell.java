@@ -1,20 +1,25 @@
 package com.dvdfu.fight;
 
-public class Cell {
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
+public class Cell extends BoardUnit {
 	enum Status {
 		ON_FIRE, NONE
 	};
 
 	Status status;
 	int statusTimer;
-	int x, y;
-	float height;
 	boolean alive;
 	boolean used;
+	boolean targeted;
 
-	public Cell(int x, int y) {
-		this.x = x;
-		this.y = y;
+	public Cell(Board board, int xCell, int yCell) {
+		super(board);
+		this.xCell = xCell;
+		this.yCell = yCell;
+		x = xCell * board.cellWidth;
+		y = yCell * board.cellHeight;
+		zPriority = 2;
 		alive = true;
 	}
 
@@ -31,12 +36,16 @@ public class Cell {
 		this.status = status;
 		switch (status) {
 		case ON_FIRE:
-			statusTimer = 30;
+			statusTimer = 80;
 			break;
 		case NONE:
 		default:
 			statusTimer = 0;
 			break;
 		}
+	}
+
+	public void draw(SpriteBatch batch) {
+		targeted = false;
 	}
 }
