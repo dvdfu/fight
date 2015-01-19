@@ -35,7 +35,7 @@ public class Board {
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
 				Cell cell = new Cell(self, i, j);
-				cell.height = Math.min(Math.min(i, width - 1 - i), Math.min(j, height - 1 - j)) / 2 * 12 + 12;
+				cell.height = Math.min(Math.min(i, width - 1 - i), Math.min(j, height - 1 - j)) * 6;
 				grid[i][j] = cell;
 				units.add(cell);
 			}
@@ -88,7 +88,7 @@ public class Board {
 		for (int j = height - 1; j >= 0; j--) {
 			for (int i = 0; i < width; i++) {
 				Cell cell = grid[i][j];
-				if (p1.onFire && i == p1.xCell && j == p1.yCell && p1.height == cell.height) {
+				if (p1.a2.using && i == p1.xCell && j == p1.yCell && p1.height == cell.height) {
 					cell.setStatus(Cell.Status.ON_FIRE);
 				}
 				if (p1.a1.using && Math.abs(p1.xCell - i) + Math.abs(p1.yCell - j) == p1.attackRange) {

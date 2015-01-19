@@ -8,7 +8,6 @@ import com.dvdfu.fight.components.GamepadComponent;
 import com.dvdfu.fight.components.SpriteComponent;
 
 public class PlayerFire extends Player {
-	boolean onFire;
 	float attackTimer;
 	int attackRange;
 	int numFires;
@@ -23,8 +22,8 @@ public class PlayerFire extends Player {
 		fireballs = new LinkedList<Fireball>();
 		moveTimeMax = 12;
 		
-		manaMax = 16;
-		manaRegen = 0.1f;
+		manaMax = 12;
+		manaRegen = 0.015f;
 		manaFill = 0;
 		manaTicks = manaMax;
 		
@@ -41,16 +40,13 @@ public class PlayerFire extends Player {
 		a2.windup = 0;
 	}
 	
-	protected void finishMoving() {
-		if (gp.keyDown(GamepadComponent.Button.A) && grounded) {
+	protected void startMoving() {
+		if (a2.using && grounded) {
 			if (manaTicks >= a2.mana) {
-				onFire = true;
 				manaTicks -= a2.mana;
 			} else {
-				onFire = false;
+				a2.using = false;
 			}
-		} else {
-			onFire = false;
 		}
 	}
 	
@@ -64,11 +60,17 @@ public class PlayerFire extends Player {
 					}
 				}
 			}
-			if (board.getStatus(xCell, yCell) == Cell.Status.ON_FIRE) {
-				moveTimeMax = 6;
-			} else {
-				moveTimeMax = 12;
+			if (grounded) {
+				if (board.getStatus(xCell, yCell) == Cell.Status.ON_FIRE) {
+					moveTimeMax = 6;
+				} else {
+					moveTimeMax = 12;
+				}
 			}
+		}
+		
+		if (gp.keyPressed(GamepadComponent.Button.A)) {
+			a2.using ^= true;
 		}
 		
 		if (gp.keyDown(GamepadComponent.Button.B)) {

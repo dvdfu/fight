@@ -1,6 +1,5 @@
 package com.dvdfu.fight.components;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.controllers.Controller;
 import com.badlogic.gdx.controllers.ControllerListener;
 import com.badlogic.gdx.controllers.Controllers;
@@ -28,7 +27,6 @@ public class GamepadComponent implements ControllerListener {
 	public void update() {
 		for (int i = 0; i < keys.length; i++) {
 			preKeys[i] = keys[i];
-//			System.out.println(Button.values()[i] + ": " + keys[i]);
 		}
 	}
 	

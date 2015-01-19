@@ -95,9 +95,9 @@ public abstract class Player extends BoardUnit {
 	
 	protected void startMoving() {}
 	
-	protected void finishMoving() {}
+	protected void endMoving() {}
 
-	private void stopMoving() {
+	private void cancelMoving() {
 		moving = false;
 		moveTime = 0;
 		xMove = 0;
@@ -146,16 +146,16 @@ public abstract class Player extends BoardUnit {
 			if (moveTime * 2 < moveTimeMax) {
 				switch (moveDirection) {
 				case RIGHT:
-					if (!gp.keyDown(GamepadComponent.Button.RIGHT)) stopMoving();
+					if (!gp.keyDown(GamepadComponent.Button.RIGHT)) cancelMoving();
 					break;
 				case LEFT:
-					if (!gp.keyDown(GamepadComponent.Button.LEFT)) stopMoving();
+					if (!gp.keyDown(GamepadComponent.Button.LEFT)) cancelMoving();
 					break;
 				case UP:
-					if (!gp.keyDown(GamepadComponent.Button.UP)) stopMoving();
+					if (!gp.keyDown(GamepadComponent.Button.UP)) cancelMoving();
 					break;
 				case DOWN:
-					if (!gp.keyDown(GamepadComponent.Button.DOWN)) stopMoving();
+					if (!gp.keyDown(GamepadComponent.Button.DOWN)) cancelMoving();
 					break;
 				}
 			}
@@ -163,8 +163,8 @@ public abstract class Player extends BoardUnit {
 			if (moveTime >= moveTimeMax) {
 				xCell += xMove;
 				yCell += yMove;
-				finishMoving();
-				stopMoving();
+				endMoving();
+				cancelMoving();
 				if (height > board.getHeight(xCell, yCell)) {
 					height--;
 				}
