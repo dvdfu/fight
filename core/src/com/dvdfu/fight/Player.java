@@ -66,7 +66,7 @@ public abstract class Player extends BoardUnit {
 		grounded = height == board.getHeight(xCell, yCell);
 	}
 
-	private void testMove(Direction direction) {
+	public void testMove(Direction direction) {
 		boolean success = false;
 		float steep = grounded? steepMax: 0;
 		switch (direction) {
@@ -130,7 +130,7 @@ public abstract class Player extends BoardUnit {
 				attack.pressed();
 			}
 			if (attack.using) {
-				attack.using();
+				attack.duringAttack();
 			}
 		}
 		
@@ -142,7 +142,6 @@ public abstract class Player extends BoardUnit {
 				manaFill += manaRegen;
 			}
 		}
-		
 
 		if (!moving && canMove) {
 			if (moveQueue.size() < 2) {

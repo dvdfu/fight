@@ -31,17 +31,21 @@ public abstract class Attack {
 	
 	public abstract void init();
 	
-	public abstract void using();
-	
-	public void use() {
+	public void startAttack() {
 		using = true;
+	}
+	
+	public abstract void duringAttack();
+	
+	public void finishAttack() {
+		using = false;
 	}
 	
 	public void pressed() {
 		if (!multipleCasts && using) return;
 		if (!useInAir && !player.grounded) return;
 		if (player.useMana(this)) {
-			use();
+			startAttack();
 		}
 	}
 }

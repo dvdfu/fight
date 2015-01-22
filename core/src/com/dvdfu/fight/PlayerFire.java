@@ -9,7 +9,6 @@ import com.dvdfu.fight.components.SpriteComponent;
 
 public class PlayerFire extends Player {
 	int numFires;
-	LinkedList<Fireball> fireballs;
 	SpriteComponent manaSprite;
 	
 	public PlayerFire(Board board) {
@@ -17,65 +16,83 @@ public class PlayerFire extends Player {
 		sprite = new SpriteComponent(Const.atlas.findRegion("player"));
 		sprite.setOrigin(8, 0);
 		manaSprite = new SpriteComponent(Const.atlas.findRegion("mana"));
-		fireballs = new LinkedList<Fireball>();
 		moveTimeMax = 12;
 		
 		manaMax = 12;
-		manaRegen = 0.015f;
+		manaRegen = 0.15f;
 		manaFill = 0;
 		manaTicks = manaMax;
 		
 		attacks[0] = new Attack(board, this, gp) {
+			LinkedList<Cell> cellList = new LinkedList<Cell>();
+			int attackRange;
+			
 			public void init() {
-				manaCost = 1;
+				manaCost = 4;
 				damage = 1;
 				button = GamepadComponent.Button.A;
 			}
 			
-			public void using() {
-				for (int i = 0; i < board.width; i++) {
-					for (int j = 0; j < board.height; j++) {
-						if (Math.abs(xCell - i) + Math.abs(yCell - j) == timer / 20) {
-							board.grid[i][j].targeted = true;
-						}
-					}
-				}
-				if (gp.keyDown(button)) {
-					if (timer < 60) {
-						timer += 1;
-					} else {
-						timer = 60;
-						attack();
-					}
-				} else {
-					attack();
-				}
+			public void startAttack() {
+				super.startAttack();
+				attackRange = 1;
+				stage = 0;
+				timer = 0;
 			}
 			
-			public void use() {
-				super.use();
-			}
-			
-			public void attack() {
-				if ((int) timer > 0) {
-					LinkedList<Cell> cellList = new LinkedList<Cell>();
+			public void duringAttack() {
+				if (stage == 0 || timer < 60 || (timer / 5) % 2 == 0) {
 					for (int i = 0; i < board.width; i++) {
 						for (int j = 0; j < board.height; j++) {
-							if (Math.abs(xCell - i) + Math.abs(yCell - j) == timer / 20) {
-								cellList.add(board.getCell(i, j));
+							if (Math.abs(xCell - i) + Math.abs(yCell - j) == attackRange) {
+								board.grid[i][j].targeted = true;
 							}
 						}
 					}
-					
-					while (!cellList.isEmpty()) {
-						Cell cell = cellList.remove();
-						Fireball f = board.poolFireball.obtain();
-						f.set(cell, xCell, yCell, height);
-						fireballs.add(f);
-						board.units.add(f);
+				}
+				if (stage == 0) {
+					if (gp.keyDown(button)) {
+						if (timer < 20) {
+							timer++;
+						} else {
+							timer = 0;
+							attackRange++;
+						}
+						if (attackRange == 3) {
+							stage = 1;
+						}
+					} else {
+						finishAttack();
 					}
-					using = false;
-					timer = 0;
+				}
+				if (stage == 1) {
+					if (gp.keyDown(button)) {
+						if (timer < 120) {
+							timer++;
+						} else {
+							finishAttack();
+						}
+					} else {
+						finishAttack();
+					}
+				}
+			}
+			
+			public void finishAttack() {
+				super.finishAttack();
+				for (int i = 0; i < board.width; i++) {
+					for (int j = 0; j < board.height; j++) {
+						if (Math.abs(xCell - i) + Math.abs(yCell - j) == attackRange) {
+							cellList.add(board.getCell(i, j));
+						}
+					}
+				}
+				
+				while (!cellList.isEmpty()) {
+					Cell cell = cellList.remove();
+					Fireball f = board.poolFireball.obtain();
+					f.set(cell, xCell, yCell, height);
+					board.units.add(f);
 				}
 			}
 		};
@@ -85,35 +102,68 @@ public class PlayerFire extends Player {
 				manaCost = 1;
 				damage = 1;
 				button = GamepadComponent.Button.B;
+				pressToUse = false;
+				multipleCasts = false;
+			}
+
+			public void startAttack() {
+				super.startAttack();
+				moveTimeMax = 6;
+				timer = 0;
 			}
 			
-			public void using() {
+			public void duringAttack() {
 				Cell cell = board.getCell(xCell, yCell);
 				if (player.height == cell.height) {
 					cell.setStatus(Cell.Status.ON_FIRE);
 				}
+				if (!gp.keyDown(button)) {
+					finishAttack();
+				}
+				if (timer > 5) {
+					if (!player.useMana(this)) {
+						finishAttack();
+					} else {
+						timer = 0;
+					}
+				} else if (moving && grounded) {
+					timer++;
+				}
 			}
-
-			public void use() {
-				using ^= true;
+			
+			public void finishAttack() {
+				super.finishAttack();
+				moveTimeMax = 12;
 			}
 		};
 		
 		attacks[2] = new Attack(board, this, gp) {
+			int attackDist;
+			int rate = 3;
+			Cell oCell;
+			
 			public void init() {
-				manaCost = 1;
+				manaCost = 4;
 				damage = 1;
-				windup = 30;
 				button = GamepadComponent.Button.X;
 				multipleCasts = false;
 				useInAir = false;
 			}
 			
-			public void using() {
+			public void startAttack() {
+				super.startAttack();
+				player.cancelMoving();
+				attackDist = 1;
+				stage = 0;
+				timer = 0;
+				oCell = board.getCell(player.xCell, player.yCell);
+			}
+			
+			public void duringAttack() {
 				canMove = false;
-				int dist = 6;
-				int[] ax = new int[dist], ay = new int[dist];
-				for (int i = 0; i < dist; i++) {
+				int[] ax = new int[10], ay = new int[10];
+				
+				for (int i = 0; i < attackDist; i++) {
 					ax[i] = 0;
 					if (moveDirection == Direction.LEFT) {
 						ax[i] = -(i + 1);
@@ -129,53 +179,40 @@ public class PlayerFire extends Player {
 				}
 				
 				if (stage == 0) {
-					if (timer >= windup) {
+					if (attackDist >= 8 || !gp.keyDown(button)) {
 						stage = 1;
 						timer = 0;
 					} else {
-						for (int i = 0; i < dist; i++) {
+						for (int i = 0; i < attackDist; i++) {
 							board.getCell(xCell + ax[i], yCell + ay[i]).targeted = true;
 						}
-						timer++;
+						if (timer < 6) {
+							timer++;
+						} else {
+							timer = 0;
+							attackDist++;
+						}
 					}
 				}
-				
 				if (stage == 1) {
-					int rate = 6;
 					if (timer % rate == 0) {
-						Cell cell = board.getCellUnsafe(xCell + ax[timer / rate], yCell + ay[timer / rate]);
+						Cell cell = board.getCellUnsafe(oCell.xCell + ax[timer / rate], oCell.yCell + ay[timer / rate]);
 						if (cell == null) {
-							using = false;
-							stage = 0;
-							timer = 0;
+							finishAttack();
 							return;
 						}
 						cell.setStatus(Cell.Status.BIG_FIRE);
 					}
 					timer++;
-					for (int i = timer / rate; i < dist; i++) {
+					for (int i = timer / rate; i < attackDist; i++) {
 						board.getCell(xCell + ax[i], yCell + ay[i]).targeted = true;
 					}
-					if (timer > rate * (dist - 1)) {
-						using = false;
-						stage = 0;
-						timer = 0;
+					if (timer > rate * (attackDist - 1)) {
+						finishAttack();
 					}
 				}
 			}
-			
-			public void use() {
-				super.use();
-				player.cancelMoving();
-				timer = 0;
-			}
 		};
-	}
-	
-	protected void startMoving() {
-		if (attacks[1].using && grounded) {
-			attacks[1].using = useMana(attacks[1]);
-		}
 	}
 	
 	public void update() {
@@ -186,13 +223,6 @@ public class PlayerFire extends Player {
 					if (board.getStatus(i, j) == Cell.Status.ON_FIRE) {
 						numFires++;
 					}
-				}
-			}
-			if (grounded) {
-				if (board.getStatus(xCell, yCell) == Cell.Status.ON_FIRE) {
-					moveTimeMax = 6;
-				} else {
-					moveTimeMax = 12;
 				}
 			}
 		}

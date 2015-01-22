@@ -26,7 +26,6 @@ public class Cell extends BoardUnit {
 	public void update() {
 		if (statusTimer > 0) {
 			statusTimer--;
-			if (status == Status.ON_FIRE) height += 0.05f;
 			if (statusTimer == 0) {
 				statusTimerUp();
 			}
@@ -53,7 +52,7 @@ public class Cell extends BoardUnit {
 			statusTimer = 120;
 			break;
 		case BIG_FIRE:
-			statusTimer = 30;
+			statusTimer = 15;
 			break;
 		case NONE:
 		default:
