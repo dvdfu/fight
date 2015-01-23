@@ -21,4 +21,8 @@ public abstract class BoardUnit {
 		// intended to be overwritten e.g. by Player
 		return yCell;
 	}
+	
+	public Cell getCell() {
+		return board.getCell(xCell, yCell);
+	}
 }

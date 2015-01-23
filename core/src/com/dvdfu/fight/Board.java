@@ -15,9 +15,7 @@ public class Board {
 	final int cellWidth = 24, cellHeight = 16;
 	Cell[][] grid;
 	PlayerFire p1;
-	SpriteComponent tile;
-	SpriteComponent firetile;
-	SpriteComponent pointer;
+	PlayerFire p2;
 	LinkedList<BoardUnit> units;
 	
 	Pool<Fireball> poolFireball;
@@ -27,11 +25,6 @@ public class Board {
 		this.width = width;
 		this.height = height;
 		grid = new Cell[width][height];
-		tile = new SpriteComponent(Const.atlas.findRegion("tile"));
-		firetile = new SpriteComponent(Const.atlas.findRegion("firetile"), cellWidth);
-		firetile.setSize(24, 24);
-		pointer = new SpriteComponent(Const.atlas.findRegion("pointer"));
-		p1 = new PlayerFire(self);
 		units = new LinkedList<BoardUnit>();
 
 		for (int i = 0; i < width; i++) {
@@ -43,7 +36,14 @@ public class Board {
 			}
 		}
 		
+		p1 = new PlayerFire(self);
+		p2 = new PlayerFire(self);
+		p1.id = 1;
+		p2.id = 2;
+		p2.xCell = 5;
+		p2.yCell = 5;
 		units.add(p1);
+		units.add(p2);
 		
 		poolFireball = new Pool<Fireball>() {
 			protected Fireball newObject() {
@@ -63,37 +63,6 @@ public class Board {
 		
 		for (int i = 0 ; i < units.size(); i++) {
 			BoardUnit b = units.get(i);
-			if (b instanceof Cell) {
-				Cell cell = (Cell) b;
-				tile.setSize(cellWidth, cellHeight);
-				if (cell.targeted) {
-					tile.setColor(1, 1, 0);
-				} else {
-					float ss = 1 - cell.height / 100f;
-					tile.setColor(ss, ss, ss);
-				}
-				tile.draw(batch, cell.xCell * cellWidth, cell.yCell * cellHeight + cell.height);
-				if (p1.xCell == cell.xCell && p1.yCell == cell.yCell) {
-					tile.setAlpha(0.3f);
-					tile.setSize(cellWidth, cellHeight);
-					tile.setColor(0, 0, 0);
-					tile.draw(batch, p1.xCell * cellWidth, p1.yCell * cellHeight + getHeight(p1.xCell, p1.yCell));
-					tile.setAlpha(1);
-				}
-				if (cell.status == Cell.Status.ON_FIRE) {
-					firetile.setFrame(cell.statusTimer / 10);
-					firetile.draw(batch, cell.xCell * cellWidth, cell.yCell * cellHeight + cell.height);
-				}
-				if (cell.status == Cell.Status.BIG_FIRE) {
-					firetile.setSize(24, 64);
-					firetile.setFrame(cell.statusTimer / 10);
-					firetile.draw(batch, cell.xCell * cellWidth, cell.yCell * cellHeight + cell.height - 4);
-					firetile.setSize(24, 24);
-				}
-				tile.setSize(cellWidth, cell.height);
-				tile.setColor(0.5f, 0.3f, 0.2f);
-				tile.draw(batch, cell.xCell * cellWidth, cell.yCell * cellHeight);
-			}
 			b.draw(batch);
 		}
 	}
@@ -105,7 +74,8 @@ public class Board {
 			if (b instanceof Fireball) {
 				Fireball f = (Fireball) b;
 				if (f.dead) {
-					f.cell.setStatus(Cell.Status.ON_FIRE);
+					f.cell.setStatus(Cell.Status.ON_FIRE, 1);
+					f.cell.playerID = f.playerID;
 					poolFireball.free(f);
 					units.remove(i);
 					i--;
@@ -123,9 +93,9 @@ public class Board {
 		
 		Collections.sort(units, new Comparator<BoardUnit>() {
 			public int compare(BoardUnit a, BoardUnit b) {
-				if (b.getZIndex() == a.getZIndex()) 
-					return (int) (b.zPriority - a.zPriority);
-				return b.getZIndex() - a.getZIndex();
+				if (a.zPriority == b.zPriority) 
+					return (int) (b.getZIndex() - a.getZIndex());
+				return a.zPriority - b.zPriority;
 			}
 		});
 	}

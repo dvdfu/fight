@@ -9,6 +9,7 @@ import com.dvdfu.fight.components.GamepadComponent;
 import com.dvdfu.fight.components.SpriteComponent;
 
 public abstract class Player extends BoardUnit {
+	int id;
 	int moveTime;
 	float moveTimeMax;
 	float ySpeed;
@@ -20,9 +21,14 @@ public abstract class Player extends BoardUnit {
 	boolean grounded;
 	boolean canMove;
 	
-	float manaFill;
-	float manaRegen;
-	int manaTicks;
+	int healthTicks;
+	int healthMax;
+	int healthTime; // invuln timer after hit
+	int healthTimeMax = 90;
+	boolean invuln;
+	float manaFill; // 0.0 to 1.0, in between ticks
+	float manaRegen; // mana regain per frame
+	int manaTicks; // actual integer mana
 	int manaMax;
 	
 	Attack[] attacks = new Attack[4];
@@ -42,7 +48,7 @@ public abstract class Player extends BoardUnit {
 		y = (yCell + 0.5f) * board.cellHeight;
 		steepMax = 6;
 		gp = new GamepadComponent();
-		zPriority = 1;
+		zPriority = 10;
 	}
 
 	private void handleJump() {
@@ -217,11 +223,31 @@ public abstract class Player extends BoardUnit {
 				}
 			}
 		}
+		testHurt();
+		
 		canMove = true;
 		gp.update();
 	}
+	
+	public void testHurt() {
+		if (invuln) {
+			if (healthTime < healthTimeMax) {
+				healthTime++;
+			} else {
+				invuln = false;
+			}
+			return;
+		}
+		if (!this.getCell().damages) return;
+		int pid = this.getCell().playerID;
+		if (pid == 0 || pid == id) return;
+		healthTicks--;
+		healthTime = 0;
+		invuln = true;
+	}
 
 	public void draw(SpriteBatch batch) {
+		if (invuln && (healthTime / 5) % 2 == 0) return;
 		sprite.drawOrigin(batch, x, y - 4 + height);
 	}
 	

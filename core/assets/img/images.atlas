@@ -46,16 +46,9 @@ player
   orig: 16, 24
   offset: 0, 0
   index: -1
-pointer
-  rotate: false
-  xy: 38, 2
-  size: 16, 16
-  orig: 16, 16
-  offset: 0, 0
-  index: -1
 tile
   rotate: false
-  xy: 56, 2
+  xy: 38, 2
   size: 16, 16
   orig: 16, 16
   offset: 0, 0

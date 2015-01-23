@@ -42,7 +42,7 @@ public class FireBullet extends BoardUnit implements Poolable {
 		if (timer > timerMax) {
 			dead = true;
 		}
-		board.getCell(xCell, yCell).targeted = true;
+//		board.getCell(xCell, yCell).setTargeted(playerID);
 	}
 	
 	public void draw(SpriteBatch batch) {

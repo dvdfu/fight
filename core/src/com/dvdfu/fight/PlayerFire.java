@@ -9,15 +9,19 @@ import com.dvdfu.fight.components.SpriteComponent;
 
 public class PlayerFire extends Player {
 	int numFires;
+	SpriteComponent healthSprite;
 	SpriteComponent manaSprite;
 	
 	public PlayerFire(Board board) {
 		super(board);
 		sprite = new SpriteComponent(Const.atlas.findRegion("player"));
 		sprite.setOrigin(8, 0);
+		healthSprite = new SpriteComponent(Const.atlas.findRegion("health"));
 		manaSprite = new SpriteComponent(Const.atlas.findRegion("mana"));
 		moveTimeMax = 12;
 		
+		healthMax = 12;
+		healthTicks = healthMax;
 		manaMax = 12;
 		manaRegen = 0.15f;
 		manaFill = 0;
@@ -45,7 +49,7 @@ public class PlayerFire extends Player {
 					for (int i = 0; i < board.width; i++) {
 						for (int j = 0; j < board.height; j++) {
 							if (Math.abs(xCell - i) + Math.abs(yCell - j) == attackRange) {
-								board.grid[i][j].targeted = true;
+								board.grid[i][j].setTargeted(id);
 							}
 						}
 					}
@@ -92,6 +96,7 @@ public class PlayerFire extends Player {
 					Cell cell = cellList.remove();
 					Fireball f = board.poolFireball.obtain();
 					f.set(cell, xCell, yCell, height);
+					f.playerID = id;
 					board.units.add(f);
 				}
 			}
@@ -115,7 +120,7 @@ public class PlayerFire extends Player {
 			public void duringAttack() {
 				Cell cell = board.getCell(xCell, yCell);
 				if (player.height == cell.height) {
-					cell.setStatus(Cell.Status.ON_FIRE);
+					cell.setStatus(Cell.Status.ON_FIRE, id);
 				}
 				if (!gp.keyDown(button)) {
 					finishAttack();
@@ -184,7 +189,7 @@ public class PlayerFire extends Player {
 						timer = 0;
 					} else {
 						for (int i = 0; i < attackDist; i++) {
-							board.getCell(xCell + ax[i], yCell + ay[i]).targeted = true;
+							board.getCell(xCell + ax[i], yCell + ay[i]).setTargeted(id);
 						}
 						if (timer < 6) {
 							timer++;
@@ -201,11 +206,11 @@ public class PlayerFire extends Player {
 							finishAttack();
 							return;
 						}
-						cell.setStatus(Cell.Status.BIG_FIRE);
+						cell.setStatus(Cell.Status.BIG_FIRE, id);
 					}
 					timer++;
 					for (int i = timer / rate; i < attackDist; i++) {
-						board.getCell(xCell + ax[i], yCell + ay[i]).targeted = true;
+						board.getCell(xCell + ax[i], yCell + ay[i]).setTargeted(id);
 					}
 					if (timer > rate * (attackDist - 1)) {
 						finishAttack();
@@ -232,11 +237,17 @@ public class PlayerFire extends Player {
 	
 	public void draw(SpriteBatch batch) {
 		super.draw(batch);
+		int xOffset = id == 1? 0: 144;
+		healthSprite.setSize(8, 16);
+		for (int i = 0; i < healthTicks; i++) {
+			healthSprite.draw(batch, i * 8 + xOffset, -30);
+		}
+		
 		manaSprite.setSize(8, 16);
 		for (int i = 0; i < manaTicks; i++) {
-			manaSprite.draw(batch, i * 8 - 48, -48);
+			manaSprite.draw(batch, i * 8 + xOffset, -48);
 		}
 		manaSprite.setSize(MathUtils.lerp(0, 8, manaFill), 16);
-		manaSprite.draw(batch, manaTicks * 8 - 48, -48);
+		manaSprite.draw(batch, manaTicks * 8 + xOffset, -48);
 	}
 }

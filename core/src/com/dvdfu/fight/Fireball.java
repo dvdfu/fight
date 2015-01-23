@@ -14,11 +14,12 @@ public class Fireball extends BoardUnit implements Poolable {
 	int xOr, yOr;
 	float vSpeed;
 	boolean dead;
+	int playerID;
 	
 	public Fireball(Board board) {
 		super(board);
 		sprite = new SpriteComponent(Const.atlas.findRegion("fireball"));
-		zPriority = 1;
+		zPriority = 10;
 		reset();
 	}
 
@@ -36,7 +37,7 @@ public class Fireball extends BoardUnit implements Poolable {
 		if (height + vSpeed < cell.height) {
 			height = cell.height;
 		}
-		cell.targeted = true;
+		cell.setTargeted(playerID);
 	}
 	
 	public void draw(SpriteBatch batch) {
