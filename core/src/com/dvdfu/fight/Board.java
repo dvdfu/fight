@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Pool;
-import com.dvdfu.fight.components.SpriteComponent;
 
 public class Board {
 	final Board self = this;
@@ -30,7 +29,7 @@ public class Board {
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
 				Cell cell = new Cell(self, i, j);
-				// cell.height = Math.min(Math.min(i, width - 1 - i), Math.min(j, height - 1 - j)) * 12;
+				cell.height = Math.min(Math.min(i, width - 1 - i), Math.min(j, height - 1 - j)) * 12;
 				grid[i][j] = cell;
 				units.add(cell);
 			}
@@ -40,8 +39,9 @@ public class Board {
 		p2 = new PlayerFire(self);
 		p1.id = 1;
 		p2.id = 2;
-		p2.xCell = 5;
-		p2.yCell = 5;
+		p2.xCell = 9;
+		p2.yCell = 9;
+		p2.cancelMoving();
 		units.add(p1);
 		units.add(p2);
 		
@@ -93,9 +93,9 @@ public class Board {
 		
 		Collections.sort(units, new Comparator<BoardUnit>() {
 			public int compare(BoardUnit a, BoardUnit b) {
-				if (a.zPriority == b.zPriority) 
-					return (int) (b.getZIndex() - a.getZIndex());
-				return a.zPriority - b.zPriority;
+				if (b.getZIndex() == a.getZIndex()) 
+					return (int) (a.zPriority - b.zPriority);
+				return b.getZIndex() - a.getZIndex();
 			}
 		});
 	}

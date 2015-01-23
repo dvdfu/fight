@@ -2,7 +2,6 @@ package com.dvdfu.fight;
 
 import java.util.LinkedList;
 
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.dvdfu.fight.components.GamepadComponent;
@@ -38,7 +37,6 @@ public abstract class Player extends BoardUnit {
 	Direction moveDirection;
 	LinkedList<Direction> moveQueue;
 	boolean firstMove;
-	int[] directionKey = { Input.Keys.W, Input.Keys.S, Input.Keys.A, Input.Keys.D };
 
 	public Player(Board board) {
 		super(board);

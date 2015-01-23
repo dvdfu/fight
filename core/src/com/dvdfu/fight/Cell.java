@@ -85,6 +85,7 @@ public class Cell extends BoardUnit {
 
 	public void draw(SpriteBatch batch) {
 		tile.setSize(cellWidth, cellHeight);
+		float ss = 1 - height / 100f;
 		if (targeted) {
 			switch (playerID) {
 			case 1:
@@ -94,11 +95,10 @@ public class Cell extends BoardUnit {
 				tile.setColor(0.6f, 0.8f, 1);
 				break;
 			default:
-				tile.setColor(1, 1, 1);
-					break;
+				tile.setColor(ss, ss, ss);
+				break;
 			}
 		} else {
-			float ss = 1 - height / 100f;
 			tile.setColor(ss, ss, ss);
 		}
 		tile.draw(batch, xCell * cellWidth, yCell * cellHeight + height);

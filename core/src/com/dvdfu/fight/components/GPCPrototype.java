@@ -1,5 +1,7 @@
 package com.dvdfu.fight.components;
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
@@ -9,10 +11,19 @@ import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.controllers.PovDirection;
 import com.badlogic.gdx.math.Vector3;
 
-public class GamepadComponent implements ControllerListener, InputProcessor {
+public class GPCPrototype implements ControllerListener, InputProcessor {
 	Controller controller;
-	boolean[] keys; // true = pressed
-	boolean[] preKeys;
+	ArrayList<Device> devices;
+	
+	public class Device {
+		boolean[] keys; // true = pressed
+		boolean[] preKeys;
+		
+		public Device() {
+			keys = new boolean[Button.values().length];
+			preKeys = new boolean[keys.length];
+		}
+	}
 	
 	public enum Button {
 		RIGHT, LEFT, UP, DOWN, L, R, A, B, X, Y, START, SELECT
@@ -20,12 +31,13 @@ public class GamepadComponent implements ControllerListener, InputProcessor {
 
 	public GamepadComponent() {
 		Gdx.input.setInputProcessor(this);
+		devices = new ArrayList<Device>();
+		devices.add(new Device()); // keyboard
 		if (Controllers.getControllers().size > 0) {
 			controller = Controllers.getControllers().first();
 			Controllers.addListener(this);
+			devices.add(new Device());
 		}
-		keys = new boolean[Button.values().length];
-		preKeys = new boolean[keys.length];
 	}
 	
 	public void update() {

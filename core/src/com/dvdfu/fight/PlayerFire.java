@@ -23,7 +23,7 @@ public class PlayerFire extends Player {
 		healthMax = 12;
 		healthTicks = healthMax;
 		manaMax = 12;
-		manaRegen = 0.15f;
+		manaRegen = 0.015f;
 		manaFill = 0;
 		manaTicks = manaMax;
 		
